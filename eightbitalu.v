@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 10.07.2026 22:48:30
+// Create Date: 10.07.2026 22:25:45
 // Design Name: 
 // Module Name: eightbitalu
 // Project Name: 
@@ -17,95 +17,78 @@
 // Revision 0.01 - File Created
 // Additional Comments:
 // 
+//////////////////////////////////////////////////////////////////////////////////
+
+
 `timescale 1ns/1ps
 
-module eightbitalu_tb;
-
-reg  [7:0] A;
-reg  [7:0] B;
-reg  [2:0] opcode;
-
-wire [7:0] Result;
-wire Carry;
-wire Zero;
-
-integer i;
-
-// Instantiate ALU
-eightbitalu uut (
-    .A(A),
-    .B(B),
-    .opcode(opcode),
-    .Result(Result),
-    .Carry(Carry),
-    .Zero(Zero)
+module eightbitalu (
+    input  [7:0] A,
+    input  [7:0] B,
+    input  [2:0] opcode,
+    output reg [7:0] Result,
+    output reg       Carry,
+    output reg       Zero
 );
 
-initial
-begin
+always @(*) begin
+    // Default values
+    Result = 8'b0;
+    Carry  = 1'b0;
 
-    // Initialize inputs
-    A = 8'd0;
-    B = 8'd0;
-    opcode = 3'b000;
+    case (opcode)
 
-    #10;
+        // Addition
+        3'b000: begin
+            {Carry, Result} = A + B;
+        end
 
-    // ADD
-    A = 8'd10;
-    B = 8'd5;
-    opcode = 3'b000;
-    #20;
+        // Subtraction
+        3'b001: begin
+            {Carry, Result} = A - B;
+        end
 
-    // SUB
-    A = 8'd20;
-    B = 8'd7;
-    opcode = 3'b001;
-    #20;
+        // Bitwise AND
+        3'b010: begin
+            Result = A & B;
+        end
 
-    // AND
-    A = 8'hCC;
-    B = 8'hAA;
-    opcode = 3'b010;
-    #20;
+        // Bitwise OR
+        3'b011: begin
+            Result = A | B;
+        end
 
-    // OR
-    A = 8'hCC;
-    B = 8'hAA;
-    opcode = 3'b011;
-    #20;
+        // Bitwise XOR
+        3'b100: begin
+            Result = A ^ B;
+        end
 
-    // XOR
-    A = 8'hCC;
-    B = 8'hAA;
-    opcode = 3'b100;
-    #20;
+        // Bitwise NOT
+        3'b101: begin
+            Result = ~A;
+        end
 
-    // NOT
-    A = 8'hCC;
-    opcode = 3'b101;
-    #20;
+        // Left Shift
+        3'b110: begin
+            Carry  = A[7];
+            Result = A << 1;
+        end
 
-    // LEFT SHIFT
-    A = 8'b10010110;
-    opcode = 3'b110;
-    #20;
+        // Right Shift
+        3'b111: begin
+            Carry  = A[0];
+            Result = A >> 1;
+        end
 
-    // RIGHT SHIFT
-    A = 8'b10010110;
-    opcode = 3'b111;
-    #20;
+        default: begin
+            Result = 8'b0;
+            Carry  = 1'b0;
+        end
 
-    // Random tests
-    for (i = 0; i < 20; i = i + 1)
-    begin
-        A = $random;
-        B = $random;
-        opcode = $random & 3'b111;
-        #20;
-    end
+    endcase
 
-    $finish;
+    // Zero flag
+    Zero = (Result == 8'b0);
 
 end
 
